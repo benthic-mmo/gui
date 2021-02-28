@@ -1,0 +1,50 @@
+set(SRCROOT ${PROJECT_SOURCE_DIR}/gui/test)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/sol2/include)
+include_directories(${SFML_INCLUDE_DIR})
+include_directories(${LUA_INCLUDE_DIR})
+if(LXGUI_TEST_OPENGL)
+    include_directories(${FREETYPE_INCLUDE_DIRS})
+    include_directories(${PNG_INCLUDE_DIR})
+    include_directories(${ZLIB_INCLUDE_DIR})
+    include_directories(${OPENGL_INCLUDE_DIR})
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/gui/test/bin)
+
+add_executable(lxgui-test
+    ${SRCROOT}/main.cpp
+)
+
+if(LXGUI_TEST_OPENGL)
+    target_compile_definitions(lxgui-test PRIVATE GL_GUI)
+endif()
+
+target_link_libraries(lxgui-test ${SFML_WINDOW_LIBRARY})
+target_link_libraries(lxgui-test ${SFML_SYSTEM_LIBRARY})
+
+if(LXGUI_TEST_SFML)
+    target_link_libraries(lxgui-test lxgui-sfml)
+    target_link_libraries(lxgui-test ${SFML_GRAPHICS_LIBRARY})
+endif()
+if(LXGUI_TEST_OPENGL)
+    target_link_libraries(lxgui-test lxgui-gl)
+    target_link_libraries(lxgui-test ${FREETYPE_LIBRARY})
+    target_link_libraries(lxgui-test ${PNG_LIBRARY})
+    target_link_libraries(lxgui-test ${ZLIB_LIBRARY})
+    target_link_libraries(lxgui-test ${OPENGL_LIBRARY})
+endif()
+
+target_link_libraries(lxgui-test lxgui-input-sfml)
+target_link_libraries(lxgui-test lxgui)
+target_link_libraries(lxgui-test lxgui-luapp)
+target_link_libraries(lxgui-test lxgui-xml)
+target_link_libraries(lxgui-test lxgui-utils)
+target_link_libraries(lxgui-test ${LUA_LIBRARIES})
+
+if(WINDOWS AND MSVC)
+    target_link_libraries(lxgui-test user32)
+endif()
+if(UNIX AND NOT APPLE)
+    target_link_libraries(lxgui-test X11 m stdc++ stdc++fs)
+endif()
