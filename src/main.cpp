@@ -20,53 +20,80 @@
 //#define GL_GUI
 
 #ifdef GL_GUI
-#include <lxgui/impl/gui_gl_renderer.hpp>
-#ifdef MACOSX
-#include <OpenGL/gl.h>
+    #include <lxgui/impl/gui_gl_renderer.hpp>
+    #ifdef MACOSX
+        #include <OpenGL/gl.h>
+    #else
+        #include <GL/gl.h>
+    #endif
 #else
-#include <GL/gl.h>
-#endif
-#else
-#include <lxgui/impl/gui_sfml.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+    #include <lxgui/impl/gui_sfml.hpp>
+    #include <SFML/Graphics/RenderWindow.hpp>
 #endif
 
 #include <lxgui/impl/input_sfml_source.hpp>
 
 #ifdef WIN32
-#include <windows.h>
-#ifdef MSVC
-#pragma comment(linker, "/entry:mainCRTStartup")
-#endif
+    #include <windows.h>
+    #ifdef MSVC
+        #pragma comment(linker, "/entry:mainCRTStartup")
+    #endif
 #endif
 
 #include <fstream>
 
+#define PROJECTNAME "unnamed-mmo"
+
 using namespace lxgui;
 
-int main(int argc, char* argv[])
+// default window size
+int uiWindowWidth = 800;
+int uiWindowHeight = 600;
+bool bFullScreen = false; 
+bool bWindowedMode = false;
+std::string sLocale = "enGB";
+bool enableCaching = true;
+
+const char* BoolToString(bool b)
 {
+  return b ? "true" : "false";
+}
+
+int main(int argc, char* argv[]){
     std::fstream mLogCout("logs/cout.txt", std::ios::out);
     auto* pOldBuffer = std::cout.rdbuf();
     std::cout.rdbuf(mLogCout.rdbuf());
-
-    try
-    {
-        uint uiWindowWidth  = 800;
-        uint uiWindowHeight = 600;
-        bool bFullScreen    = false;
-        std::string sLocale = "enGB";
-
-        // Read some configuration data
-        if (utils::file_exists("config.lua"))
-        {
-            lua::state mLua;
-            mLua.do_file("config.lua");
-            uiWindowWidth  = mLua.get_global_int("window_width",  false, 800);
-            uiWindowHeight = mLua.get_global_int("window_height", false, 600);
-            bFullScreen    = mLua.get_global_bool("fullscreen",   false, false);
-            sLocale        = mLua.get_global_string("locale",     false, "enGB");
-        }
+       try{
+        // Read the configuration data
+        if (utils::file_exists("config.lua")){ 
+            // TODO use logging library
+            std::cout << "reading from config.lua" << std::endl;
+            lua::state mLua; 
+            try{
+                mLua.do_file("config.lua");
+                uiWindowWidth  = mLua.get_global_int("window_width",  false, uiWindowWidth);
+                uiWindowHeight = mLua.get_global_int("window_height", false, uiWindowHeight); 
+                bFullScreen    = mLua.get_global_bool("fullscreen",   false, bFullScreen);
+                bWindowedMode  = mLua.get_global_bool("windowed_mode", false, bWindowedMode);
+                sLocale        = mLua.get_global_string("locale",     false, sLocale);
+                enableCaching  = mLua.get_global_bool("enable_caching", false, enableCaching);
+            }catch (...){
+                //TODO: use logging library 
+                std::cout << "error reading config file. using defaults" << std::endl;
+            }
+        }else{
+            // write config.lua file with defaults
+            //TODO use logging library  
+            std::cout << "failed to read config file, creating config from defaults" << std::endl;
+            std::ofstream outfile("config.lua");
+            outfile << "locale = " + sLocale + ";" << std::endl; 
+            outfile << "window_width = " + std::to_string(uiWindowWidth) +";"<< std::endl;
+            outfile << "window_height = " + std::to_string(uiWindowHeight) + ";" << std::endl;
+            outfile << "fullscreen = " + std::string(BoolToString(bFullScreen)) + ";" << std::endl; 
+            outfile << "windowed_mode = " + std::string(BoolToString(bWindowedMode)) + ";" << std::endl;
+            outfile << "enable_caching = " + std::string(BoolToString(enableCaching)) + ";" << std::endl;
+            outfile.close();
+        } 
 
         // Redirect output from the gui library to a log file
         std::fstream mGUI("logs/gui.txt", std::ios::out);
@@ -79,17 +106,26 @@ int main(int argc, char* argv[])
     #else
         sf::RenderWindow mWindow;
     #endif
-
-        if (bFullScreen)
-            mWindow.create(sf::VideoMode(uiWindowWidth, uiWindowHeight, 32), "test", sf::Style::Fullscreen);
-        else
-            mWindow.create(sf::VideoMode(uiWindowWidth, uiWindowHeight, 32), "test");
+        // set ui window size to max if windowed or fullscreen is enabled
+        if (bWindowedMode or bFullScreen){
+            uiWindowWidth = sf::VideoMode::getDesktopMode().width;
+            uiWindowHeight = sf::VideoMode::getDesktopMode().height;
+        }
+        if (bFullScreen){
+            mWindow.create(sf::VideoMode(uiWindowWidth, uiWindowHeight, 32), PROJECTNAME, sf::Style::Fullscreen);
+        }
+        else{
+            mWindow.create(sf::VideoMode(uiWindowWidth, uiWindowHeight, 32), PROJECTNAME);
+        }
 
         // Initialize the gui
+        // TODO: use logging library 
         std::cout << "Creating gui manager..." << std::endl;
         std::unique_ptr<gui::manager> pManager;
 
     #ifdef GL_GUI
+        // TODO: use logging libary
+        std::cout << "Using GL for gui" << std::endl;
         // Define the GUI renderer
         std::unique_ptr<gui::renderer_impl> pRendererImpl =
             std::unique_ptr<gui::renderer_impl>(new gui::gl::renderer());
@@ -110,17 +146,19 @@ int main(int argc, char* argv[])
             std::move(pRendererImpl)
         ));
     #else
+        // TODO: use logging library
+        std::cout << "Using sfml for gui" << std::endl;
         // Use full SFML implementation
         pManager = gui::sfml::create_manager(mWindow, sLocale);
     #endif
 
-        pManager->enable_caching(false);
+        pManager->enable_caching(enableCaching);
 
         // Load files :
         //  - first set the directory in which the interface is located
         pManager->add_addon_directory("interface");
         //  - create the lua::state
-        std::cout << " Creating lua..." << std::endl;
+        std::cout << " Creating lua state..." << std::endl;
         pManager->create_lua([](gui::manager& mManager) {
             // We use a lambda function because this code might be called
             // again later on, for example when one reloads the GUI (the
@@ -145,67 +183,25 @@ int main(int argc, char* argv[])
 
         //  - and load all files
         std::cout << " Reading gui files..." << std::endl;
+       
+        try{
         pManager->read_files();
+        } catch (...) {
+            std::cout << "file read failed" <<std::endl;
 
+        } 
         // Create GUI by code :
 
         // Create the Frame
         // A "root" frame has no parent and is directly owned by the gui::manager.
         // A "child" frame is owned by another frame.
+        
         gui::frame* pFrame = pManager->create_root_frame<gui::frame>("FPSCounter");
+        
         pFrame->set_abs_point(gui::anchor_point::TOPLEFT, "", gui::anchor_point::TOPLEFT);
         pFrame->set_abs_point(gui::anchor_point::BOTTOMRIGHT, "FontstringTestFrameText", gui::anchor_point::TOPRIGHT);
 
         // Create the FontString
-        gui::font_string* pFont = pFrame->create_region<gui::font_string>(gui::layer_type::ARTWORK, "$parentText");
-        pFont->set_abs_point(gui::anchor_point::BOTTOMRIGHT, "$parent", gui::anchor_point::BOTTOMRIGHT, 0, -5);
-        pFont->set_font("interface/fonts/main.ttf", 12);
-        pFont->set_justify_v(gui::text::vertical_alignment::BOTTOM);
-        pFont->set_justify_h(gui::text::alignment::RIGHT);
-        pFont->set_outlined(true);
-        pFont->set_text_color(gui::color::RED);
-        pFont->notify_loaded();
-
-        // Create the scripts
-        // In Lua
-        /*pFrame->define_script("OnLoad",
-            "self.update_time = 0.5;"
-            "self.timer = 1.0;"
-            "self.frames = 0;",
-            "main.cpp", 146 // You can provide the location of the Lua source, for error handling
-        );
-        pFrame->define_script("OnUpdate",
-            "self.timer = self.timer + arg1;"
-            "self.frames = self.frames + 1;"
-
-            "if (self.timer > self.update_time) then"
-            "    local fps = self.frames/self.timer;"
-            "    self.Text:set_text(\"FPS : \"..math.floor(fps));"
-
-            "    self.timer = 0.0;"
-            "    self.frames = 0;"
-            "end",
-            "main.cpp", 152 // You can provide the location of the Lua source, for error handling
-        );*/
-
-        // Or in C++
-        float update_time = 0.5f, timer = 1.0f;
-        int frames = 0;
-        pFrame->define_script("OnUpdate",
-            [=](gui::frame* self, gui::event* event) mutable {
-                float delta = event->get<float>(0);
-                timer += delta;
-                ++frames;
-
-                if (timer > update_time) {
-                    gui::font_string* text = self->get_region<gui::font_string>("Text");
-                    text->set_text("(created in C++)\nFPS : "+utils::to_string(floor(frames/timer)));
-
-                    timer = 0.0f;
-                    frames = 0;
-                }
-            }
-        );
 
         // Tell the Frame is has been fully loaded, and call "OnLoad"
         pFrame->notify_loaded();
@@ -312,3 +308,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+

@@ -1,7 +1,7 @@
 #Core
 texture_test:1
-fontstring_test:1
-statusbar_test:1
+fontstring_test:0
+statusbar_test:0
 slider_test:1
-scroll_test:1
+scroll_test:0
 #Others
