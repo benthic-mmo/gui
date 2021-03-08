@@ -41,6 +41,8 @@
 #endif
 
 #include <fstream>
+#include <plog/Log.h>
+#include "plog/Initializers/RollingFileInitializer.h"
 
 #define PROJECTNAME "unnamed-mmo"
 
@@ -60,14 +62,13 @@ const char* BoolToString(bool b)
 }
 
 int main(int argc, char* argv[]){
-    std::fstream mLogCout("logs/cout.txt", std::ios::out);
-    auto* pOldBuffer = std::cout.rdbuf();
-    std::cout.rdbuf(mLogCout.rdbuf());
+    // initialize logging 
+    plog::init(plog::debug, "logs/cout.txt");
+
        try{
         // Read the configuration data
         if (utils::file_exists("config.lua")){ 
-            // TODO use logging library
-            std::cout << "reading from config.lua" << std::endl;
+            LOGD << "Reading from config.lua";
             lua::state mLua; 
             try{
                 mLua.do_file("config.lua");
@@ -78,13 +79,11 @@ int main(int argc, char* argv[]){
                 sLocale        = mLua.get_global_string("locale",     false, sLocale);
                 enableCaching  = mLua.get_global_bool("enable_caching", false, enableCaching);
             }catch (...){
-                //TODO: use logging library 
-                std::cout << "error reading config file. using defaults" << std::endl;
+                LOGD << "Error reading config file. using defaults";
             }
         }else{
             // write config.lua file with defaults
-            //TODO use logging library  
-            std::cout << "failed to read config file, creating config from defaults" << std::endl;
+            LOGD << "Config file missing, creating config from defaults";
             std::ofstream outfile("config.lua");
             outfile << "locale = " + sLocale + ";" << std::endl; 
             outfile << "window_width = " + std::to_string(uiWindowWidth) +";"<< std::endl;
@@ -95,12 +94,9 @@ int main(int argc, char* argv[]){
             outfile.close();
         } 
 
-        // Redirect output from the gui library to a log file
-        std::fstream mGUI("logs/gui.txt", std::ios::out);
-        gui::out.rdbuf(mGUI.rdbuf());
 
         // Create a window
-        std::cout << "Creating window..." << std::endl;
+        LOGD << "Creating window....";
     #ifdef GL_GUI
         sf::Window mWindow;
     #else
@@ -119,13 +115,11 @@ int main(int argc, char* argv[]){
         }
 
         // Initialize the gui
-        // TODO: use logging library 
-        std::cout << "Creating gui manager..." << std::endl;
+        LOGD << "Creating gui manager....";
         std::unique_ptr<gui::manager> pManager;
 
     #ifdef GL_GUI
-        // TODO: use logging libary
-        std::cout << "Using GL for gui" << std::endl;
+        LOGD << "Using GL for gui";
         // Define the GUI renderer
         std::unique_ptr<gui::renderer_impl> pRendererImpl =
             std::unique_ptr<gui::renderer_impl>(new gui::gl::renderer());
@@ -146,8 +140,7 @@ int main(int argc, char* argv[]){
             std::move(pRendererImpl)
         ));
     #else
-        // TODO: use logging library
-        std::cout << "Using sfml for gui" << std::endl;
+        LOGD << "Using sfml for gui";
         // Use full SFML implementation
         pManager = gui::sfml::create_manager(mWindow, sLocale);
     #endif
@@ -158,7 +151,7 @@ int main(int argc, char* argv[]){
         //  - first set the directory in which the interface is located
         pManager->add_addon_directory("interface");
         //  - create the lua::state
-        std::cout << " Creating lua state..." << std::endl;
+        LOGD << "Creating lua state...";
         pManager->create_lua([](gui::manager& mManager) {
             // We use a lambda function because this code might be called
             // again later on, for example when one reloads the GUI (the
@@ -182,30 +175,14 @@ int main(int argc, char* argv[]){
         });
 
         //  - and load all files
-        std::cout << " Reading gui files..." << std::endl;
-       
+        LOGD << "Reading gui files..."; 
         try{
         pManager->read_files();
         } catch (...) {
-            std::cout << "file read failed" <<std::endl;
+            LOGE << "file read failed";
 
         } 
-        // Create GUI by code :
-
-        // Create the Frame
-        // A "root" frame has no parent and is directly owned by the gui::manager.
-        // A "child" frame is owned by another frame.
         
-        gui::frame* pFrame = pManager->create_root_frame<gui::frame>("FPSCounter");
-        
-        pFrame->set_abs_point(gui::anchor_point::TOPLEFT, "", gui::anchor_point::TOPLEFT);
-        pFrame->set_abs_point(gui::anchor_point::BOTTOMRIGHT, "FontstringTestFrameText", gui::anchor_point::TOPRIGHT);
-
-        // Create the FontString
-
-        // Tell the Frame is has been fully loaded, and call "OnLoad"
-        pFrame->notify_loaded();
-
         // Start the main loop
         bool bRunning = true;
         bool bFocus = true;
@@ -215,7 +192,7 @@ int main(int argc, char* argv[]){
 
         input::manager* pInputMgr = pManager->get_input_manager();
 
-        std::cout << "Entering loop..." << std::endl;
+        LOGD << "Entering main loop";
         while (bRunning)
         {
             // Get events from SFML
@@ -289,23 +266,20 @@ int main(int argc, char* argv[]){
 
             ++uiFrameCount;
         }
-        std::cout << "End of loop, mean FPS : " << uiFrameCount/mPerfClock.getElapsedTime().asSeconds() << std::endl;
+        LOGD << "End of loop, mean FPS : " << uiFrameCount/mPerfClock.getElapsedTime().asSeconds();
     }
     catch (const std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        LOGE << e.what();
         return 1;
     }
     catch (...)
     {
-        std::cout << "# Error # : Unhandled exception !" << std::endl;
+        LOGE << "Unhandled exception !";
         return 1;
     }
 
-    std::cout << "End of program." << std::endl;
-
-    std::cout.rdbuf(pOldBuffer);
-
+    LOGD << "End of program.";
     return 0;
 }
 

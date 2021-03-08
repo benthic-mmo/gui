@@ -1,3 +1,6 @@
 [submodule "lib/lxgui"]
 	path = lib/lxgui
 	url = https://github.com/unnamed-mmo/lxgui.git
+[submodule "lib/plog"]
+	path = lib/plog
+	url = https://github.com/SergiusTheBest/plog.git
