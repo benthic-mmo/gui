@@ -108,22 +108,4 @@
             </Button>
         </Frames>
     </Button>
-    
-    <EditBox name="EditBoxTemplate_EditBox" virtual="true">
-        <Size>
-            <AbsDimension y="18"/>
-        </Size>
-        <Backdrop edgeFile="|border_1px.png">
-            <BackgroundInsets>
-                <AbsInset left="1" right="1" top="1" bottom="1"/>
-            </BackgroundInsets>
-        </Backdrop>
-        <FontString font="interface/fonts/main.ttf" fontHeight="9" justifyH="LEFT" justifyV="MIDDLE"/>
-        <TextInsets left="4" right="4" top="2" bottom="2"/>
-        <Scripts>
-            <OnEscapePressed>
-                self:clear_focus();
-            </OnEscapePressed>
-        </Scripts>
-    </EditBox>
 </Ui>

@@ -1,0 +1,112 @@
+<Ui>
+    <Frame name="FrameTemplate_Dialog" virtual="true" hidden="false" movable="true" enableMouse="true" clampedToScreen="true" frameStrata="DIALOG" topLevel="true">
+        <Backdrop edgeFile="|static/borders/dialog_border.png">
+            <BackgroundInsets>
+                <AbsInset left="8" right="8" top="8" bottom="8"/>
+            </BackgroundInsets>
+            <BackgroundColor r="0.5" g="0.5" b="0.5" a="0.5"/>
+        </Backdrop>
+        <HitRectInsets>
+            <AbsInset left="5" right="5" top="5" bottom="5"/>
+        </HitRectInsets>
+        <ResizeBounds>
+            <Min><AbsDimension x="16" y="32"/></Min>
+        </ResizeBounds>
+        <TitleRegion>
+            <Size>
+                <AbsDimension y="19"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOP" relativePoint="TOP">
+                    <Offset>
+                        <AbsDimension y="5"/>
+                    </Offset>
+                </Anchor>
+                <Anchor point="LEFT" relativePoint="LEFT">
+                    <Offset>
+                        <AbsDimension y="8"/>
+                    </Offset>
+                </Anchor>
+                <Anchor point="RIGHT" relativePoint="RIGHT">
+                    <Offset>
+                        <AbsDimension y="8"/>
+                    </Offset>
+                </Anchor>
+            </Anchors>
+        </TitleRegion>
+        <Scripts>
+            <OnShow>
+                self:raise();
+            </OnShow>
+        </Scripts>
+        <Frames>
+            <Frame name="$parentTitle">
+                <Size>
+                    <AbsDimension y="16"/>
+                </Size>
+                <Backdrop>
+                    <BackgroundColor r="0.5" g="0.5" b="0.5"/>
+                </Backdrop>
+                <Anchors>
+                    <Anchor point="TOP" relativePoint="TOP">
+                        <Offset>
+                            <AbsDimension y="8"/>
+                        </Offset>
+                    </Anchor>
+                    <Anchor point="LEFT" relativePoint="LEFT">
+                        <Offset>
+                            <AbsDimension x="8"/>
+                        </Offset>
+                    </Anchor>
+                    <Anchor point="RIGHT" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="-8"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Layers>
+                    <Layer level="ARTWORK">
+                        <FontString name="$parentTitleString" font="interface/fonts/main.ttf" fontHeight="9" justifyH="CENTER" text="">
+                            <Size>
+                                <AbsDimension x="140" y="32"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="CENTER"/>
+                            </Anchors>
+                            <Color r="1" g="1" b="1"/>
+                        </FontString>
+                    </Layer>
+                </Layers>
+                <Frames>
+                    <Button name="$parentCloseButton" text="X">
+                        <Size>
+                            <AbsDimension x="16" y="16"/>
+                        </Size>
+                        <Anchors>
+                            <Anchor point="RIGHT">
+                                <Offset>
+                                    <AbsDimension y="1"/>
+                                </Offset>
+                            </Anchor>
+                        </Anchors>
+                        <NormalText font="interface/fonts/main.ttf" fontHeight="9" setAllPoints="false">
+                            <Anchors>
+                                <Anchor point="CENTER"/>
+                            </Anchors>
+                            <Color r="1" g="1" b="1"/>
+                        </NormalText>
+                        <HighlightTexture file="|static/buttons/button_highlight.png"/>
+                        <Scripts>
+                            <OnClick>
+                                self:get_parent():get_parent():hide();
+                                if (self:get_parent():get_parent().on_close) then
+                                    self:get_parent():get_parent():on_close();
+                                end
+                            </OnClick>
+                        </Scripts>
+                    </Button>
+                </Frames>
+            </Frame>
+        </Frames>
+    </Frame>
+</Ui>

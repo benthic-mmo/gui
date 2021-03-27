@@ -1,0 +1,7 @@
+## Interface: 0001
+## Title: login
+## Version: 1.0
+## Author: Puffball
+## SavedVariables:
+
+addon.xml

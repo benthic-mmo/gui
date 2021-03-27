@@ -1,0 +1,36 @@
+<Ui>
+    <Frame name="Login" inherits="FrameTemplate_StaticDialog" hidden="true">
+        <Size>
+            <AbsDimension x="200" y="200"/>
+        </Size>
+        <ResizeBounds>
+            <Min><AbsDimension x="16" y="80"/></Min>
+        </ResizeBounds>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        <Scripts>
+            <OnLoad>
+                dofile("interface/login/addon.lua");
+                self.on_close = function (self)
+                    if (self.on_cancel ~= nil) then
+                        self:on_cancel();
+                    end
+                end;
+
+                self.Title.TitleString:set_text("login");
+                self:set_min_width(225);
+
+                self:show();
+                self:raise();
+            </OnLoad>
+            <OnShow>
+            </OnShow>
+        </Scripts>
+        <Frames>
+			<EditBox name="$parentFile" inherits="EditBoxTemplate_EditBox"> 
+                
+            </EditBox>
+        </Frames>
+    </Frame>
+</Ui>

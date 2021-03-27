@@ -94,7 +94,6 @@ int main(int argc, char* argv[]){
             outfile.close();
         } 
 
-
         // Create a window
         LOGD << "Creating window....";
     #ifdef GL_GUI
@@ -228,7 +227,6 @@ int main(int argc, char* argv[]){
                             break;
                     }
                 }
-
                 static_cast<input::sfml::source*>(pInputMgr->get_source())->on_sfml_event(mEvent);
             }
 

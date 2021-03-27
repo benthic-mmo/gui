@@ -1,7 +1,10 @@
 #Core
-texture_test:1
+
+utils:1
+texture_test:0
 fontstring_test:0
 statusbar_test:0
-slider_test:1
+slider_test:0
 scroll_test:0
+login:1
 #Others
