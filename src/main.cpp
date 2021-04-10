@@ -185,6 +185,9 @@ int main(int argc, char* argv[]){
         // Start the main loop
         bool bRunning = true;
         bool bFocus = true;
+        // if you're inputting in a textbox, pause hotkeys 
+        bool textInputFocus = false;
+
         float fDelta = 0.1f;
         sf::Clock mClock, mPerfClock;
         uint uiFrameCount = 0;
@@ -200,12 +203,11 @@ int main(int argc, char* argv[]){
             {
                 if (mEvent.type      == sf::Event::Closed)
                     bRunning = false;
-                else if (mEvent.type == sf::Event::LostFocus)
+                else if (mEvent.type == sf::Event::LostFocus) 
                     bFocus = false;
                 else if (mEvent.type == sf::Event::GainedFocus)
                     bFocus = true;
-                else if (mEvent.type == sf::Event::KeyReleased)
-                {
+                else if (mEvent.type == sf::Event::KeyReleased && !textInputFocus){
                     switch (mEvent.key.code)
                     {
                         case sf::Keyboard::Key::Escape:

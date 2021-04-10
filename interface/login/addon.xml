@@ -1,7 +1,7 @@
 <Ui>
     <Frame name="Login" inherits="FrameTemplate_StaticDialog" hidden="true">
         <Size>
-            <AbsDimension x="200" y="200"/>
+            <AbsDimension x="250" y="200"/>
         </Size>
         <ResizeBounds>
             <Min><AbsDimension x="16" y="80"/></Min>
@@ -28,9 +28,58 @@
             </OnShow>
         </Scripts>
         <Frames>
-			<EditBox name="$parentFile" inherits="EditBoxTemplate_EditBox"> 
-                
+            <EditBox name="$parentUsername" inherits="EditBoxTemplate_EditBox">
+                <Size>
+                    <AbsDimension x="100" y="20"/>
+                </Size> 
+                <Anchors> 
+                    <Anchor point="LEFT">
+                        <Offset>
+                            <AbsDimension x="16" y="20"/> 
+                        </Offset> 
+                    </Anchor> 
+                </Anchors>
+                <Scripts>
+                    <OnShow> 
+                        self:password_mode(True);
+                    </OnShow>
+                </Scripts>
+
             </EditBox>
+            
+            <EditBox name="$parentPassword" inherits="EditBoxTemplate_EditBox"> 
+                <Size> 
+                    <AbsDimension x="100" y="20"/>
+                </Size>
+                <Anchors> 
+                    <Anchor point="RIGHT"> 
+                        <Offset> 
+                            <AbsDimension x="-16" y="20" /> 
+                        </Offset> 
+                    </Anchor> 
+                </Anchors> 
+            </EditBox>
+            
+            <Button name="$parentLoginButton" inherits="ButtonTemplate_Button"> 
+                <Size> 
+                    <AbsDimension x="100" y="20"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOM"> 
+                        <Offset> 
+                            <AbsDimension x="-16" y="-20" /> 
+                        </Offset> 
+                    </Anchor> 
+                </Anchors>
+                <Scripts>
+                    <OnLoad>
+                        self:set_text("Login");
+                    </OnLoad>
+                    <OnClick>
+                    </OnClick>
+                </Scripts>
+            </Button>
+
         </Frames>
     </Frame>
 </Ui>

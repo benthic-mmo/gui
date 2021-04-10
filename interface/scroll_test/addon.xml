@@ -46,6 +46,7 @@
                     </Anchor>
                 </Anchors>
             </EditBox>
+
             <Button name="$parentCancelButton" inherits="ButtonTemplate_Button">
                 <Anchors>
                     <Anchor point="BOTTOMRIGHT">
